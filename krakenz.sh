@@ -25,15 +25,19 @@ set_lcd_mode() {
 	liquidctl --match NZXT set lcd screen "$1" "$2"
 }
 
-draw_clock_image() {
+update_clock_image() {
+	magick	-gravity center \
+		-background black \
+		-fill purple \
+		-size 320x320 \
+		-font ${FONT} \
+		caption:"$(date +%H:%M)" /tmp/time.png
+	set_lcd_mode "static" "/tmp/time.png"
+}
+
+refresh_clock() {
 	while true; do
-		magick	-gravity center \
-			-background black \
-			-fill purple \
-			-size 320x320 \
-			-font ${FONT} \
-			caption:"$(date +%H:%M)" /tmp/time.png
-		set_lcd_mode "static" "/tmp/time.png"
+		update_clock_image
 		sleep 60
 	done
 }
@@ -60,4 +64,4 @@ done
 [[ ${#SPEED[@]} -gt 0 ]] && \
 	(IFS=,; liquidctl --match NZXT set pump speed ${SPEED[*]})
 
-[[ -n $CLOCK ]] && draw_clock_image
+[[ -n $CLOCK ]] && refresh_clock
